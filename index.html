@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>تقویم و محاسبه سن خاندان استاد ملا غلامسخی</title>
+
+<style>
+/* --- تنظیمات کلی و فونت --- */
+:root {
+    --cover-bg: #2c3e50;
+    --gold: #ffd700;
+    --paper: #fffcf5;
+    --accent-blue: #0288d1;
+    --accent-green: #2e7d32;
+    --accent-purple: #6a1b9a;
+    --accent-red: #c62828;
+    --accent-orange: #ef6c00;
+}
+
+body {
+    margin: 0;
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #ece9e6, #ffffff);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- ساختار کتاب --- */
+.book-container {
+    width: 100%;
+    max-width: 600px;
+    background: var(--paper);
+    min-height: 100vh;
+    position: relative;
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    display: flex;
+}
+
+.book-spine {
+    width: 30px;
+    background: linear-gradient(to right, #2c3e50, #4ca1af, #2c3e50);
+    border-left: 3px solid #1a252f;
+    flex-shrink: 0;
+    box-shadow: inset -5px 0 10px rgba(0,0,0,0.5);
+}
+
+.book-content {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* انیمیشن صفحات */
+.page { display: none; animation: slideIn 0.4s ease-out; }
+.active { display: block; }
+@keyframes slideIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* --- صفحه جلد --- */
+.cover-page {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    text-align: center;
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border: 5px double var(--gold);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    padding-top: 40px;
+}
+
+.author-name {
+    margin-bottom: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #76ff03; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1px solid #76ff03;
+    animation: fadeInDown 1s;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cover-title {
+    font-size: 24px;
+    border-bottom: 3px solid var(--gold);
+    padding-bottom: 15px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin-top: 20px;
+    line-height: 1.6;
+}
+.cover-subtitle { font-size: 16px; color: var(--gold); margin-bottom: 20px; opacity: 0.9; }
+.logo-icon { font-size: 80px; margin-bottom: 10px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4)); margin-top: 20px; }
+
+/* --- عناصر رابط کاربری --- */
+.parent-card {
+    background: linear-gradient(135deg, #ffffff, #f0f4c3);
+    border: 2px solid #cddc39;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: 0.2s;
+}
+.parent-card:active { transform: scale(0.97); background: #e6ee9c; }
+.p-name { color: #33691e; font-weight: bold; font-size: 22px; }
+.p-role { color: #558b2f; font-size: 14px; }
+
+.list-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background: white;
+    border: none;
+    border-right: 6px solid;
+    border-right-color: var(--accent-green);
+    padding: 16px 15px;
+    margin-bottom: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    color: #444;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: 0.2s;
+    border-radius: 8px;
+    text-align: right;
+}
+.list-btn-child { border-right-color: var(--accent-blue); background: #e3f2fd; }
+.list-btn-spiritual { border-right-color: var(--accent-purple); background: #f3e5f5; color: #4a148c; }
+.list-btn-tool { border-right-color: var(--accent-orange); background: #fff3e0; color: #e65100; }
+.list-btn:active { transform: translateX(-5px); background: #f1f8e9; }
+
+.row-number {
+    background: #eee;
+    color: #555;
+    padding: 2px 8px;
+    border-radius: 50%;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+/* --- جداول --- */
+.date-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 15px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.date-table thead { background: linear-gradient(to left, #37474f, #455a64); color: white; }
+.date-table th, .date-table td { padding: 12px 5px; text-align: center; }
+.row-shamsi td { background: #fff8e1; color: #e65100; }
+.row-miladi td { background: #e1f5fe; color: #0277bd; }
+.row-qamari td { background: #f3e5f5; color: #7b1fa2; }
+
+/* باکس سن */
+.info-box {
+    background: linear-gradient(135deg, #37474f, #263238);
+    color: #fff;
+    padding: 20px;
+    margin-top: 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+.age-display { display: flex; justify-content: center; gap: 8px; margin-top: 15px; direction: ltr; }
+.age-unit {
+    background: rgba(255,255,255,0.15);
+    padding: 8px 10px;
+    border-radius: 8px;
+    min-width: 55px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.age-num { font-size: 24px; font-weight: bold; color: var(--gold); display: block; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+.age-txt { font-size: 11px; color: #ddd; }
+.animal-box {
+    background: var(--gold);
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 50px;
+    margin-top: 15px;
+    font-weight: bold;
+    display: inline-block;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+}
+
+/* دکمه‌ها */
+.btn {
+    width: 100%; padding: 14px; border: none; border-radius: 30px;
+    font-size: 16px; margin-top: 20px; cursor: pointer;
+    font-family: inherit; font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
+}
+.btn:active { transform: scale(0.96); }
+.btn-gold { background: linear-gradient(to bottom, #ffeb3b, #fbc02d); color: #333; }
+.btn-green { background: linear-gradient(to left, #43a047, #66bb6a); color: #fff; }
+.btn-blue { background: linear-gradient(to left, #1e88e5, #42a5f5); color: #fff; }
+.btn-purple { background: linear-gradient(to left, #8e24aa, #ab47bc); color: #fff; }
+.btn-orange { background: linear-gradient(to left, #f57c00, #ff9800); color: #fff; }
+.btn-outline { background: transparent; border: 2px solid #555; color: #555; }
+
+.page-header {
+    text-align: center; margin-bottom: 20px; padding: 10px;
+    background: linear-gradient(to right, #f5f5f5, #e0e0e0);
+    border-radius: 10px; border-bottom: 2px solid #ccc;
+}
+.page-header h2 { margin: 0; color: #333; font-size: 20px; }
+
+/* محتوای معنوی */
+.spiritual-content {
+    background: #fff; border: 2px solid #d1c4e9; padding: 20px;
+    border-radius: 15px; box-shadow: inset 0 0 20px rgba(106, 27, 154, 0.05);
+    line-height: 1.8; text-align: justify; color: #333;
+    max-height: 60vh; overflow-y: auto;
+}
+.arabic-text {
+    font-family: 'Times New Roman', serif; font-size: 22px; text-align: center;
+    color: #2e7d32; background: #f1f8e9; padding: 15px;
+    border-radius: 10px; border: 1px dashed #43a047; margin-bottom: 15px; line-height: 2.2;
+}
+.spiritual-title {
+    color: #6a1b9a; text-align: center; border-bottom: 2px solid #ce93d8;
+    padding-bottom: 10px; margin-bottom: 15px; font-size: 18px; font-weight: bold;
+}
+.will-list { list-style-type: none; padding: 0; }
+.will-list li {
+    background: #f3e5f5; margin-bottom: 10px; padding: 10px 15px;
+    border-radius: 8px; border-right: 4px solid #8e24aa; font-size: 14px;
+}
+
+/* ابزارهای محاسبه */
+.select-container { margin-bottom: 15px; }
+.custom-select {
+    width: 100%; padding: 15px; border: 2px solid #ddd;
+    border-radius: 10px; background: white; font-family: inherit;
+    font-size: 16px; outline: none; cursor: pointer;
+}
+.diff-box {
+    display: flex; justify-content: space-between; background: #37474f;
+    color: white; padding: 15px; border-radius: 12px; margin-top: 20px;
+}
+.diff-item { text-align: center; flex: 1; border-left: 1px solid rgba(255,255,255,0.2); }
+.diff-item:last-child { border-left: none; }
+.diff-val { font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px; }
+
+.countdown-box {
+    text-align: center; background: #263238; color: white;
+    padding: 25px; border-radius: 15px; margin-bottom: 20px;
+}
+.countdown-grid { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+.countdown-unit {
+    background: rgba(255,255,255,0.1); padding: 10px;
+    border-radius: 10px; min-width: 60px; border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* --- استایل تقویم گرافیکی --- */
+.calendar-wrapper {
+    background: #fff; border-radius: 12px; padding: 15px;
+    margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid #ddd;
+}
+.cal-title {
+    text-align: center; font-weight: bold; color: #444;
+    margin-bottom: 10px; font-size: 15px; background: #f5f5f5;
+    padding: 8px; border-radius: 5px; border-right: 4px solid var(--accent-blue);
+}
+.cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; direction: rtl;
+}
+.cal-header {
+    font-size: 12px; text-align: center; color: #888;
+    font-weight: bold; padding-bottom: 5px; background: #f9f9f9;
+    border-radius: 4px; padding-top: 4px;
+}
+.cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; border-radius: 5px; background: #fff; color: #333;
+    border: 1px solid #f0f0f0; position: relative;
+}
+.cal-day.empty { background: transparent; border: none; }
+
+.cal-day.today-highlight {
+    background: #43a047 !important; color: white !important; font-weight: bold;
+    border: 2px solid #a5d6a7; box-shadow: 0 0 8px rgba(67, 160, 71, 0.5);
+    z-index: 3; border-radius: 50%;
+}
+
+.cal-footer {
+    margin-top: 15px; border-top: 2px dashed #eee; padding-top: 12px;
+}
+.today-row {
+    font-size: 14px; background: #e3f2fd; padding: 8px; border-radius: 8px;
+    color: #0277bd; text-align: center; margin-bottom: 10px;
+    display: flex; justify-content: center; align-items: center; gap: 5px;
+    border: 1px solid #b3e5fc;
+}
+.target-row {
+    background: #fff3e0; color: #d84315; text-align: center;
+    padding: 10px; border-radius: 8px; font-weight: bold;
+    font-size: 15px; border: 1px solid #ffccbc;
+}
+.target-label { display: block; font-size: 11px; color: #8d6e63; margin-bottom: 2px; font-weight: normal; }
+
+</style>
+</head>
+<body>
+
+<div class="book-container">
+    <div class="book-spine"></div>
+    <div class="book-content">
+
+        <div class="page active" id="page0">
+            <div class="cover-page">
+                <div class="author-name">ترتیب کننده: قاری جان محمد دین‌دوست</div>
+                
+                <div class="logo-icon">📖</div>
+                <div class="cover-title">تقویم و محاسبه سن<br>خاندان استاد ملا غلامسخی</div>
+                
+                <div class="cover-subtitle">نسخه جدید هوشمند (شمسی)</div>
+                <br>
+                <button class="btn btn-gold" onclick="goToPage(1)">ورود به دفتر ⬅️</button>
+                <button class="btn btn-blue" style="margin-top:10px" onclick="goToPage(200)">📅 ابزار تقویم و مناسبت‌ها</button>
+            </div>
+        </div>
+
+        <div class="page" id="page1">
+            <div class="page-header"><h2>بزرگان خاندان</h2></div>
+            
+            <div class="parent-card" onclick="goToPage(3)">
+                <div class="p-name">ملا غلامسخی</div>
+                <div class="p-role">پدر مهربان</div>
+            </div>
+            
+            <div class="parent-card" onclick="goToPage(4)">
+                <div class="p-name">خانم زبیده</div>
+                <div class="p-role">مادر مهربان</div>
+            </div>
+
+            <br>
+            <div style="background:#f5f5f5; padding:15px; border-radius:10px; border:1px solid #ccc;">
+                <button class="btn btn-green" style="margin-top:0" onclick="goToPage(2)">لیست فرزندان 👥</button>
+                <button class="btn btn-purple" style="margin-top:15px;" onclick="goToPage(100)">📜 وصیت و دعای پدر</button>
+            </div>
+
+            <button class="btn btn-outline" style="margin-top:40px" onclick="goToPage(0)">خروج</button>
+        </div>
+
+        <div class="page" id="page2">
+            <div class="page-header"><h2>لیست فرزندان</h2></div>
+            <div id="children-list"></div>
+            <button class="btn btn-gold" style="margin-top:25px" onclick="goToPage(1)">⬆️ بازگشت به والدین</button>
+        </div>
+
+        <div class="page" id="page20">
+            <div class="page-header">
+                <h2>خانواده جان محمد</h2>
+                <p style="font-size:12px; color:#666; margin-top:5px;">لیست فرزندان</p>
+            </div>
+            <div id="jan-family-list"></div>
+            <button class="btn btn-blue" style="margin-top:25px" onclick="goToPage(11)">↩️ بازگشت به صفحه جان محمد</button>
+        </div>
+
+        <!-- صفحه جدید برای خانواده شاه محمد -->
+        <div class="page" id="page21">
+            <div class="page-header">
+                <h2>خانواده شاه محمد</h2>
+                <p style="font-size:12px; color:#666; margin-top:5px;">لیست فرزندان</p>
+            </div>
+            <div id="shah-family-list"></div>
+            <button class="btn btn-blue" style="margin-top:25px" onclick="goToPage(12)">↩️ بازگشت به صفحه شاه محمد</button>
+        </div>
+
+        <div class="page" id="page100">
+            <div class="page-header"><h2>میراث معنوی پدر</h2></div>
+            <button class="list-btn list-btn-spiritual" onclick="goToPage(101)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#8e24aa; color:white">1</span>
+                    <span style="margin-right:10px; font-weight:bold;">🤲 دعای پدر</span>
+                </div>
+            </button>
+            <!-- دکمه معرفی حذف شد و شماره وصیت نامه اصلاح گردید -->
+            <button class="list-btn list-btn-spiritual" onclick="goToPage(103)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#8e24aa; color:white">2</span>
+                    <span style="margin-right:10px; font-weight:bold;">📜 وصیت‌نامه</span>
+                </div>
+            </button>
+            <button class="btn btn-gold" style="margin-top:40px" onclick="goToPage(1)">↩️ بازگشت</button>
+        </div>
+
+        <div class="page" id="page101">
+            <div class="page-header"><h2>🤲 دعای خیر پدر</h2></div>
+            <div class="spiritual-content">
+                <div class="spiritual-title">نیایش برای عاقبت‌بخیری فرزندان</div>
+                
+                <p style="margin-bottom:10px; font-weight:bold; color:#2e7d32;">متن دعا:</p>
+                <div class="arabic-text">
+                    رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا.<br>
+                    اللَّهُمَّ اجْعَلْ أَوْلَادِي أَوْلَادًا صَالِحِينَ، حَافِظِينَ لِلْقُرْآنِ، وَالْعَامِلِينَ بِالسُّنَّةِ. اللَّهُمَّ بَارِكْ لِي فِيهِمْ وَلَا تَضُرَّهُمْ وَوَفِّقْهُمْ لِطَاعَتِكَ وَارْزُقْنِي بِرَّهُمْ.
+                </div>
+                
+                <p style="margin-bottom:10px; font-weight:bold; color:#1565c0;">ترجمه و مفهوم:</p>
+                <p style="text-align:justify;">
+                    پروردگارا! از همسران و فرزندانمان مایه روشنی چشم به ما عطا فرما و ما را پیشوای پرهیزگاران قرار ده.<br><br>
+                    بارالها! فرزندانم را فرزندانی صالح، حافظ قرآن و عمل‌کننده به سنت پیامبرت قرار ده.<br>
+                    خدایا! وجودشان را برایم پربرکت گردان، هرگز گزند و آسیبی به آنان نرسان، آنان را در طاعت و بندگی خودت موفق بدار و نیکی و خوبی ایشان را روزی من در دنیا و آخرت بگردان. آمین یا رب العالمین.
+                </p>
+            </div>
+            <button class="btn btn-purple" onclick="goToPage(100)">↩️ بازگشت به فهرست معنوی</button>
+        </div>
+
+        <!-- صفحه معرفی ملا غلامسخی بنا به درخواست برای خالی شدن جا حذف شد -->
+
+        <div class="page" id="page103">
+            <div class="page-header"><h2>📜 وصیت‌نامه پدر</h2></div>
+            <div class="spiritual-content">
+                <div class="spiritual-title">اندرزهای دلسوزانه برای فرزندانم</div>
+                <p style="margin-bottom:15px;">فرزندان دلبندم، جگر گوشه‌های من! دنیا مزرعه آخرت است و عمر چون ابر بهاری در گذر. وصیت من به شما، وصیت پدری است که خیر دنیا و عقبای شما را می‌خواهد. این سخنان را آویزه گوش کنید:</p>
+                
+                <ul class="will-list">
+                    <li>
+                        <strong>۱. تقوای الهی و نماز:</strong><br>
+                        عزیزانم، ستون دین نماز است. هرگز در خواندن نماز سستی نکنید که کلید تمام خیرات است. خدا را در همه حال، در خلوت و جلوت ناظر بر اعمال خود بدانید.
+                    </li>
+                    <li>
+                        <strong>۲. اتحاد و همبستگی (بسیار مهم):</strong><br>
+                        شما گوشت و پوست یکدیگر هستید. مبادا مال بی‌ارزش دنیا، زمین یا ارثیه، میان شما کینه و جدایی بیندازد. همچون انگشتان یک دست مشت باشید و پشت و پناه هم بمانید. تفرقه، برکت را از خاندان می‌برد.
+                    </li>
+                    <li>
+                        <strong>۳. احترام به مادر:</strong><br>
+                        رضایت خداوند در گرو رضایت مادر شماست. خاک پای مادرتان را توتیای چشم کنید. اگر من نباشم، او ستون خیمه این خانواده است؛ مبادا با صدای بلند با او سخن بگویید یا دلش را بشکنید.
+                    </li>
+                    <li>
+                        <strong>۴. رزق حلال:</strong><br>
+                        فرزندانم، به کم راضی باشید اما گرد حرام نگردید. مال حرام، آتش است و نسل را تباه می‌کند. با زحمت کشی و عرق جبین نان بخورید تا خدا به مالتان برکت دهد.
+                    </li>
+                    <li>
+                        <strong>۵. صله رحم و مردم‌داری:</strong><br>
+                        با خویشاوندان قطع رابطه نکنید، حتی اگر آن‌ها با شما بد کردند. در غم و شادی مردم شریک باشید و دست افتادگان را بگیرید تا خداوند در روز سختی دستگیر شما باشد.
+                    </li>
+                    <li>
+                        <strong>۶. تلاوت قرآن:</strong><br>
+                        خانه‌هایتان را با تلاوت قرآن نورانی کنید. قرآن در قبر و قیامت مونس و شفیع شما خواهد بود.
+                    </li>
+                </ul>
+                <p style="font-size:13px; color:#666; text-align:center; margin-top:20px;">
+                    خداوند یار و نگهدار همه شما باشد.<br>
+                    <strong>امضاء: ملا غلامسخی</strong>
+                </p>
+            </div>
+            <button class="btn btn-purple" onclick="goToPage(100)">↩️ بازگشت به فهرست معنوی</button>
+        </div>
+
+        <div class="page" id="page200">
+            <div class="page-header"><h2>ابزار تقویم و مناسبت‌ها</h2></div>
+            
+            <button class="list-btn list-btn-tool" onclick="goToPage(201)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#e65100; color:white">1</span>
+                    <span style="margin-right:10px; font-weight:bold;">📏 محاسبه فاصله سنی</span>
+                </div>
+            </button>
+
+            <button class="list-btn list-btn-tool" onclick="goToPage(202)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#e65100; color:white">2</span>
+                    <span style="margin-right:10px; font-weight:bold;">🌙 مشاهده رمضان پیش‌رو</span>
+                </div>
+            </button>
+
+            <button class="list-btn list-btn-tool" onclick="goToPage(203)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#e65100; color:white">3</span>
+                    <span style="margin-right:10px; font-weight:bold;">🕌 عید سعید فطر</span>
+                </div>
+            </button>
+
+            <button class="list-btn list-btn-tool" onclick="goToPage(204)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#e65100; color:white">4</span>
+                    <span style="margin-right:10px; font-weight:bold;">🐑 عید سعید قربان</span>
+                </div>
+            </button>
+
+            <button class="list-btn list-btn-tool" onclick="goToPage(205)">
+                <div style="display:flex; align-items:center">
+                    <span class="row-number" style="background:#e65100; color:white">5</span>
+                    <span style="margin-right:10px; font-weight:bold;">🌷 سال جدید (نوروز)</span>
+                </div>
+            </button>
+
+            <button class="btn btn-outline" style="margin-top:40px" onclick="goToPage(0)">🏠 بازگشت به خانه</button>
+        </div>
+
+        <div class="page" id="page201">
+            <div class="page-header"><h2>فاصله سنی</h2></div>
+            <div style="background:white; padding:20px; border-radius:15px; border:1px solid #ddd;">
+                <label style="display:block; margin-bottom:5px;">نفر اول (بزرگتر):</label>
+                <div class="select-container"><select id="person1-select" class="custom-select"></select></div>
+                <label style="display:block; margin-bottom:5px;">نفر دوم (کوچکتر):</label>
+                <div class="select-container"><select id="person2-select" class="custom-select"></select></div>
+                <button class="btn btn-blue" onclick="calcAgeDiff()">🔍 محاسبه اختلاف</button>
+                <div class="diff-box" id="diff-result" style="display:none;">
+                    <div class="diff-item"><span class="diff-val" id="diff-y">0</span>سال</div>
+                    <div class="diff-item"><span class="diff-val" id="diff-m">0</span>ماه</div>
+                    <div class="diff-item"><span class="diff-val" id="diff-d">0</span>روز</div>
+                </div>
+            </div>
+            <button class="btn btn-orange" onclick="goToPage(200)">↩️ بازگشت</button>
+        </div>
+
+        <div class="page" id="page202">
+            <div class="page-header"><h2>ماه مبارک رمضان</h2></div>
+            <div class="countdown-box" style="background:linear-gradient(135deg, #1a237e, #311b92);">
+                <div style="font-size:16px; opacity:0.8; margin-bottom:10px;">باقی‌مانده تا ماه رحمت:</div>
+                <div class="countdown-grid">
+                    <div class="countdown-unit"><span class="age-num" id="ram-d">0</span><span class="age-txt">روز</span></div>
+                    <div class="countdown-unit"><span class="age-num" id="ram-m">0</span><span class="age-txt">ماه</span></div>
+                </div>
+            </div>
+            <div id="cal-ram" class="calendar-wrapper"></div>
+            <div class="spiritual-content" style="margin-top:20px;">
+                <div class="spiritual-title">دعای افطار</div>
+                <div class="arabic-text">اللَّهُمَّ لَكَ صُمْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ</div>
+            </div>
+            <button class="btn btn-orange" onclick="goToPage(200)">↩️ بازگشت</button>
+        </div>
+
+        <div class="page" id="page203">
+            <div class="page-header"><h2>عید سعید فطر</h2></div>
+            <div class="countdown-box" style="background:linear-gradient(135deg, #004d40, #00695c);">
+                <div style="font-size:16px; opacity:0.8; margin-bottom:10px;">باقی‌مانده تا عید فطر:</div>
+                <div class="countdown-grid">
+                    <div class="countdown-unit"><span class="age-num" id="fitr-d">0</span><span class="age-txt">روز</span></div>
+                    <div class="countdown-unit"><span class="age-num" id="fitr-m">0</span><span class="age-txt">ماه</span></div>
+                </div>
+            </div>
+            <div id="cal-fitr" class="calendar-wrapper"></div>
+            <button class="btn btn-orange" onclick="goToPage(200)">↩️ بازگشت</button>
+        </div>
+
+        <div class="page" id="page204">
+            <div class="page-header"><h2>عید سعید قربان</h2></div>
+            <div class="countdown-box" style="background:linear-gradient(135deg, #b71c1c, #880e4f);">
+                <div style="font-size:16px; opacity:0.8; margin-bottom:10px;">باقی‌مانده تا عید قربان:</div>
+                <div class="countdown-grid">
+                    <div class="countdown-unit"><span class="age-num" id="adha-d">0</span><span class="age-txt">روز</span></div>
+                    <div class="countdown-unit"><span class="age-num" id="adha-m">0</span><span class="age-txt">ماه</span></div>
+                </div>
+            </div>
+            <div id="cal-adha" class="calendar-wrapper"></div>
+            <button class="btn btn-orange" onclick="goToPage(200)">↩️ بازگشت</button>
+        </div>
+
+        <div class="page" id="page205">
+            <div class="page-header"><h2>سال جدید (نوروز)</h2></div>
+            <div class="countdown-box" style="background:linear-gradient(135deg, #33691e, #558b2f);">
+                <div style="font-size:16px; opacity:0.8; margin-bottom:10px;">باقی‌مانده تا اول حمل:</div>
+                <div class="countdown-grid">
+                    <div class="countdown-unit"><span class="age-num" id="newyear-d">0</span><span class="age-txt">روز</span></div>
+                    <div class="countdown-unit"><span class="age-num" id="newyear-m">0</span><span class="age-txt">ماه</span></div>
+                </div>
+            </div>
+            <div id="cal-newyear" class="calendar-wrapper"></div>
+            <button class="btn btn-orange" onclick="goToPage(200)">↩️ بازگشت</button>
+        </div>
+
+        <div id="details-container"></div>
+
+    </div>
+</div>
+
+<script>
+
+function playSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.6, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+}
+
+const data = [
+    { name: "ملا غلامسخی (پدر)", date: "1950-05-05", role: "parent" },
+    { name: "خانم زبیده (مادر)", date: "1956-01-22", role: "parent" },
+    { name: "ملا خال محمد", date: "1978-01-01", role: "child" },
+    { name: "خانم سیامو", date: "1980-02-20", role: "child" },
+    { name: "ملاحسین", date: "1983-11-23", role: "child" },
+    { name: "خانم حبیبه", date: "1985-04-01", role: "child" },
+    { name: "خانم سایره", date: "1988-02-24", role: "child" },
+    { name: "خان محمد", date: "1991-02-18", role: "child" },
+    { name: "جان محمد", date: "1993-02-08", role: "child" },
+    { name: "شاه محمد", date: "1995-06-19", role: "child" }
+];
+
+const janFamilyData = [
+    { name: "عاطفه جان", date: "2019-04-24", icon: "👧" },
+    { name: "مدینه جان", date: "2020-03-17", icon: "👧" },
+    { name: "شعیب الله جان", date: "2024-10-27", icon: "👶" }
+];
+
+// دیتای مربوط به خانواده شاه محمد (تاریخ میلادی معادل 1404/05/06 تنظیم شده است)
+const shahFamilyData = [
+    { name: "شبیراحمد جان", date: "2025-07-28", icon: "👦" }
+];
+
+const afghanMonths = ["حمل", "ثور", "جوزا", "سرطان", "اسد", "سنبله", "میزان", "عقرب", "قوس", "جدی", "دلو", "حوت"];
+const persianWeekDays = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']; 
+const persianWeekDaysFull = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
+const zodiacAnimals = ["موش 🐭", "گاو 🐮", "پلنگ 🐯", "خرگوش 🐰", "نهنگ 🐲", "مار 🐍", "اسب 🐴", "گوسفند 🐑", "میمون 🐵", "مرغ 🐔", "سگ 🐶", "خوک 🐷"];
+
+function toJalali(gy, gm, gd){
+    const g_d_m=[0,31,59,90,120,151,181,212,243,273,304,334];
+    let jy = (gy<=1600)?0:979; gy -= (gy<=1600)?621:1600;
+    let gy2 = (gm>2)?(gy+1):gy;
+    let days = (365*gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+    jy += 33*Math.floor(days/12053); days %= 12053;
+    jy += 4*Math.floor(days/1461); days %= 1461;
+    if(days > 365){jy += Math.floor((days-1)/365); days = (days-1)%365;}
+    let jm = (days < 186)?1+Math.floor(days/31):7+Math.floor((days-186)/30);
+    let jd = 1 + ((days < 186)?(days%31):((days-186)%30));
+    return [jy, jm, jd];
+}
+
+function jalaliToGregorian(jy, jm, jd) {
+    let gy = (jy <= 979) ? 621 : 1600;
+    jy -= (jy <= 979) ? 0 : 979;
+    let days = (365 * jy) + (Math.floor(jy / 33) * 8) + Math.floor((jy % 33 + 3) / 4) + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+    gy += 400 * Math.floor(days / 146097); days %= 146097;
+    if (days > 36524) { days--; gy += 100 * Math.floor(days / 36524); days %= 36524; if (days >= 365) days++; }
+    gy += 4 * Math.floor(days / 1461); days %= 1461;
+    if (days > 365) { gy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+    let gd = days + 1;
+    let gm = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    if ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0)) gm[2] = 29;
+    let m = 0;
+    while (m < 13 && gd > gm[m]) { gd -= gm[m]; m++; }
+    return new Date(gy, m - 1, gd);
+}
+
+function toHijri(date){
+    let i = Math.floor((date - new Date(622,6,16)) / 86400000);
+    let hy = Math.floor(i / 354.367);
+    let r = i - Math.floor(hy * 354.367);
+    let hm = Math.floor(r / 29.53);
+    let hd = Math.floor(r - hm * 29.53) + 1;
+    return [hy + 1, hm + 1, hd];
+}
+
+function renderCalendar(containerId, displayDate, targetDate, occasionName) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = ''; 
+
+    const now = new Date();
+    let jNow = toJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    
+    let jDisplay = toJalali(displayDate.getFullYear(), displayDate.getMonth() + 1, displayDate.getDate());
+    let jy = jDisplay[0];
+    let jm = jDisplay[1];
+
+    let jTarget = toJalali(targetDate.getFullYear(), targetDate.getMonth() + 1, targetDate.getDate());
+    let targetDayIndex = (targetDate.getDay() + 1) % 7;
+    let targetDayName = persianWeekDaysFull[targetDayIndex];
+
+    const title = document.createElement('div');
+    title.className = 'cal-title';
+    title.innerText = `ماه جاری: ${afghanMonths[jm-1]} ${jy}`;
+    container.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'cal-grid';
+    
+    persianWeekDays.forEach(d => {
+        let dh = document.createElement('div');
+        dh.className = 'cal-header';
+        dh.innerText = d;
+        grid.appendChild(dh);
+    });
+
+    let firstDayOfSolarMonth = jalaliToGregorian(jy, jm, 1);
+    let startWeekday = (firstDayOfSolarMonth.getDay() + 1) % 7; 
+
+    let daysInMonth = (jm <= 6) ? 31 : (jm <= 11) ? 30 : 29;
+    if (jm === 12) {
+       const isLeap = (jy % 33 === 1 || jy % 33 === 5 || jy % 33 === 9 || jy % 33 === 13 || jy % 33 === 17 || jy % 33 === 22 || jy % 33 === 26 || jy % 33 === 30);
+       if (isLeap) daysInMonth = 30;
+    }
+
+    for(let i=0; i<startWeekday; i++) {
+        let empty = document.createElement('div');
+        empty.className = 'cal-day empty';
+        grid.appendChild(empty);
+    }
+
+    for(let i=1; i<=daysInMonth; i++) {
+        let dayCell = document.createElement('div');
+        dayCell.className = 'cal-day';
+        dayCell.innerText = i;
+        
+        if(jy === jNow[0] && jm === jNow[1] && i === jNow[2]) {
+            dayCell.classList.add('today-highlight');
+        }
+
+        grid.appendChild(dayCell);
+    }
+
+    container.appendChild(grid);
+
+    const footer = document.createElement('div');
+    footer.className = 'cal-footer';
+    
+    let nowDayName = persianWeekDaysFull[(now.getDay() + 1) % 7];
+    let todayStr = `${nowDayName}، ${jNow[2]} ${afghanMonths[jNow[1]-1]} ${jNow[0]}`;
+
+    footer.innerHTML = `
+        <div class="today-row">
+            <span>🔵 امروز:</span>
+            <span style="font-weight:bold;">${todayStr}</span>
+        </div>
+        <div class="target-row">
+            <span class="target-label">تاریخ ${occasionName}:</span>
+            ${targetDayName} ${jTarget[2]} ${afghanMonths[jTarget[1]-1]} ${jTarget[0]}
+        </div>
+    `;
+    container.appendChild(footer);
+}
+
+// --- ناوبری ---
+function goToPage(n) {
+    playSound();
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page' + n);
+    if(target) { target.classList.add('active'); }
+    window.scrollTo(0, 0); 
+    
+    if (n >= 200 && n <= 205) {
+        updateOccasions();
+    }
+}
+
+// --- ساخت محتوا ---
+const childrenList = document.getElementById('children-list');
+const detailsContainer = document.getElementById('details-container');
+const janListContainer = document.getElementById('jan-family-list');
+const shahListContainer = document.getElementById('shah-family-list');
+let allPeople = [...data, ...janFamilyData, ...shahFamilyData]; 
+
+const p1Select = document.getElementById('person1-select');
+const p2Select = document.getElementById('person2-select');
+
+allPeople.forEach(p => {
+    let opt1 = document.createElement('option'); opt1.value = p.date; opt1.text = p.name; p1Select.appendChild(opt1);
+    let opt2 = document.createElement('option'); opt2.value = p.date; opt2.text = p.name; p2Select.appendChild(opt2);
+});
+p1Select.selectedIndex = 0; p2Select.selectedIndex = 1;
+
+let childCounter = 1; 
+data.forEach((person, index) => {
+    let pageId = index + 3;
+    if(person.role === "child") {
+        let btn = document.createElement('button');
+        btn.className = 'list-btn';
+        btn.innerHTML = `<div style="display:flex; align-items:center"><span class="row-number">${childCounter}</span><span style="margin-right:10px; font-weight:bold;">${person.name}</span></div><span style="font-size:18px">👤</span>`;
+        btn.onclick = () => goToPage(pageId);
+        childrenList.appendChild(btn);
+        childCounter++;
+    }
+    let backId = (person.role === "parent") ? 1 : 2;
+    let backTxt = (person.role === "parent") ? "بازگشت به والدین" : "بازگشت به لیست";
+    let extra = "";
+    
+    // اضافه کردن دکمه برای فرزندان در صفحات مخصوص
+    if(person.name.includes("جان محمد")) {
+        extra = `<div style="margin-top:20px; border-top:1px dashed rgba(255,255,255,0.3); padding-top:15px;"><p style="font-size:14px; margin-bottom:10px; color:#ffeb3b;">مشاهده فرزندان من:</p><button class="btn btn-green" onclick="goToPage(20)">👨‍👩‍👧‍👦 ورود به خانواده من</button></div>`;
+    } else if(person.name.includes("شاه محمد")) {
+        extra = `<div style="margin-top:20px; border-top:1px dashed rgba(255,255,255,0.3); padding-top:15px;"><p style="font-size:14px; margin-bottom:10px; color:#ffeb3b;">مشاهده فرزندان من:</p><button class="btn btn-green" onclick="goToPage(21)">👨‍👩‍👧‍👦 ورود به خانواده من</button></div>`;
+    }
+    
+    createDetailPage(pageId, person.name, person.date, backId, backTxt, `main-${index}`, extra);
+});
+
+janFamilyData.forEach((person, index) => {
+    let pageId = 30 + index; 
+    let btn = document.createElement('button');
+    btn.className = 'list-btn list-btn-child';
+    btn.innerHTML = `<div style="display:flex; align-items:center"><span class="row-number" style="background:#1976d2; color:white">${index + 1}</span><span style="margin-right:10px; font-weight:bold; color:#0d47a1">${person.name}</span></div><span style="font-size:20px">${person.icon}</span>`;
+    btn.onclick = () => goToPage(pageId);
+    janListContainer.appendChild(btn);
+    createDetailPage(pageId, person.name, person.date, 20, "بازگشت به خانواده جان محمد", `jan-${index}`, "");
+});
+
+shahFamilyData.forEach((person, index) => {
+    let pageId = 40 + index; 
+    let btn = document.createElement('button');
+    btn.className = 'list-btn list-btn-child';
+    btn.innerHTML = `<div style="display:flex; align-items:center"><span class="row-number" style="background:#1976d2; color:white">${index + 1}</span><span style="margin-right:10px; font-weight:bold; color:#0d47a1">${person.name}</span></div><span style="font-size:20px">${person.icon}</span>`;
+    btn.onclick = () => goToPage(pageId);
+    shahListContainer.appendChild(btn);
+    // page 12 is the detail page for Shah Mohammad (index 9 + 3 = 12)
+    createDetailPage(pageId, person.name, person.date, 21, "بازگشت به خانواده شاه محمد", `shah-${index}`, "");
+});
+
+
+function createDetailPage(pageId, name, dateStr, backId, backLabel, uniqueId, extraContent) {
+    let div = document.createElement('div');
+    div.className = 'page'; div.id = 'page' + pageId;
+    div.innerHTML = `
+        <div class="page-header"><h2>${name}</h2></div>
+        <table class="date-table">
+            <thead><tr><th style="width:20%">تقویم</th><th style="width:20%">روز</th><th style="width:35%">ماه</th><th style="width:25%">سال</th></tr></thead>
+            <tbody>
+                <tr class="row-shamsi"><td style="font-weight:bold">شمسی</td><td id="ds-${uniqueId}"></td><td id="ms-${uniqueId}" style="font-weight:bold"></td><td id="ys-${uniqueId}"></td></tr>
+                <tr class="row-miladi"><td style="font-weight:bold">میلادی</td><td id="dg-${uniqueId}"></td><td id="mg-${uniqueId}"></td><td id="yg-${uniqueId}"></td></tr>
+                <tr class="row-qamari"><td style="font-weight:bold">قمری</td><td id="dh-${uniqueId}"></td><td id="mh-${uniqueId}"></td><td id="yh-${uniqueId}"></td></tr>
+            </tbody>
+        </table>
+        <div class="info-box">
+            <div style="font-size:13px; margin-bottom:10px; color:#cfd8dc;">سن دقیق در این لحظه:</div>
+            <div class="age-display"><div class="age-unit"><span class="age-num" id="ad-${uniqueId}">0</span><span class="age-txt">روز</span></div><div class="age-unit"><span class="age-num" id="am-${uniqueId}">0</span><span class="age-txt">ماه</span></div><div class="age-unit"><span class="age-num" id="ay-${uniqueId}">0</span><span class="age-txt">سال</span></div></div>
+            <div class="animal-box">سال حیوان: <span id="zod-${uniqueId}"></span></div>
+            ${extraContent}
+        </div>
+        <button class="btn btn-blue" onclick="goToPage(${backId})">↩️ ${backLabel}</button>
+    `;
+    detailsContainer.appendChild(div);
+}
+
+function updatePageData(dateStr, uniqueId) {
+    const now = new Date();
+    let date = new Date(dateStr);
+    document.getElementById(`dg-${uniqueId}`).innerText = date.getDate();
+    document.getElementById(`mg-${uniqueId}`).innerText = date.getMonth() + 1;
+    document.getElementById(`yg-${uniqueId}`).innerText = date.getFullYear();
+    let j = toJalali(date.getFullYear(), date.getMonth()+1, date.getDate());
+    document.getElementById(`ds-${uniqueId}`).innerText = j[2];
+    document.getElementById(`ms-${uniqueId}`).innerText = afghanMonths[j[1]-1];
+    document.getElementById(`ys-${uniqueId}`).innerText = j[0];
+    let h = toHijri(date);
+    document.getElementById(`dh-${uniqueId}`).innerText = h[2];
+    document.getElementById(`mh-${uniqueId}`).innerText = h[1];
+    document.getElementById(`yh-${uniqueId}`).innerText = h[0];
+    let zIndex = (j[0] - 7) % 12; if (zIndex < 0) zIndex += 12;
+    document.getElementById(`zod-${uniqueId}`).innerText = zodiacAnimals[zIndex];
+    let y = now.getFullYear() - date.getFullYear();
+    let m = now.getMonth() - date.getMonth();
+    let d = now.getDate() - date.getDate();
+    
+    // اگر تاریخ تولد در آینده باشد (مانند تاریخ تولد سال 1404)
+    if(now < date) {
+        let diffTime = date - now;
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        let remY = Math.floor(diffDays / 365);
+        let remM = Math.floor((diffDays % 365) / 30);
+        let remD = (diffDays % 365) % 30;
+        
+        document.getElementById(`ay-${uniqueId}`).innerText = "-" + remY;
+        document.getElementById(`am-${uniqueId}`).innerText = "-" + remM;
+        document.getElementById(`ad-${uniqueId}`).innerText = "-" + remD;
+        
+        let ageLabel = document.getElementById(`ad-${uniqueId}`).parentElement.parentElement.previousElementSibling;
+        ageLabel.innerText = "زمان باقی‌مانده تا تولد:";
+        ageLabel.style.color = "#ffeb3b";
+    } else {
+        if(d < 0){ m--; d += 30; }
+        if(m < 0){ y--; m += 12; }
+        document.getElementById(`ay-${uniqueId}`).innerText = y;
+        document.getElementById(`am-${uniqueId}`).innerText = m;
+        document.getElementById(`ad-${uniqueId}`).innerText = d;
+    }
+}
+
+function calcAgeDiff() {
+    let d1 = new Date(document.getElementById('person1-select').value);
+    let d2 = new Date(document.getElementById('person2-select').value);
+    if (d1 > d2) { let temp = d1; d1 = d2; d2 = temp; }
+    let y = d2.getFullYear() - d1.getFullYear();
+    let m = d2.getMonth() - d1.getMonth();
+    let d = d2.getDate() - d1.getDate();
+    if(d < 0) { m--; d += 30; }
+    if(m < 0) { y--; m += 12; }
+    document.getElementById('diff-y').innerText = y;
+    document.getElementById('diff-m').innerText = m;
+    document.getElementById('diff-d').innerText = d;
+    document.getElementById('diff-result').style.display = "flex";
+    playSound();
+}
+
+function updateOccasions() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    // 1. رمضان
+    let ramDate = new Date(2026, 1, 19); 
+    if (now > ramDate) ramDate = new Date(2027, 1, 8); 
+    updateCountdown('ram', ramDate, now);
+    renderCalendar('cal-ram', now, ramDate, "شروع رمضان");
+
+    // 2. عید فطر
+    let fitrDate = new Date(2026, 2, 21);
+    if (now > fitrDate) fitrDate = new Date(2027, 2, 11);
+    updateCountdown('fitr', fitrDate, now);
+    renderCalendar('cal-fitr', now, fitrDate, "عید فطر");
+
+    // 3. عید قربان
+    let adhaDate = new Date(2026, 4, 28); 
+    if (now > adhaDate) adhaDate = new Date(2027, 4, 17);
+    updateCountdown('adha', adhaDate, now);
+    renderCalendar('cal-adha', now, adhaDate, "عید قربان");
+
+    // 4. سال نو (نوروز)
+    let newYearDate = new Date(currentYear, 2, 21);
+    if (now > newYearDate) {
+        newYearDate = new Date(currentYear + 1, 2, 21);
+    }
+    updateCountdown('newyear', newYearDate, now);
+    renderCalendar('cal-newyear', now, newYearDate, "سال نو");
+}
+
+function updateCountdown(idPrefix, targetDate, now) {
+    let diffTime = targetDate - now;
+    if (diffTime < 0) diffTime = 0;
+    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    let months = Math.floor(diffDays / 30);
+    let days = diffDays % 30;
+    document.getElementById(idPrefix + '-m').innerText = months;
+    document.getElementById(idPrefix + '-d').innerText = days;
+}
+
+function updateAll() {
+    data.forEach((person, index) => { updatePageData(person.date, `main-${index}`); });
+    janFamilyData.forEach((person, index) => { updatePageData(person.date, `jan-${index}`); });
+    shahFamilyData.forEach((person, index) => { updatePageData(person.date, `shah-${index}`); });
+}
+
+updateAll();
+setInterval(updateAll, 60000);
+
+</script>
+</body>
+</html>
