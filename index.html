@@ -865,9 +865,17 @@ function renderCalendar(containerId, displayDate, targetDate, occasionName) {
     container.appendChild(footer);
 }
 
-// --- ناوبری با یک دکمه برگشت سراسری ---
+// --- ناوبری با یک دکمه برگشت سراسری + دکمه برگشت خودِ گوشی ---
+// هر ورود به یک صفحه، یک سابقه واقعی در History گوشی/مرورگر ایجاد می‌کند.
+// بنابراین هم دکمه برگشت داخل برنامه و هم دکمه برگشت گوشی دقیقاً یک مسیر را برمی‌گردانند.
 let pageHistory = [0];
 let currentPageNumber = 0;
+let handlingBrowserBack = false;
+
+// صفحه اول را به عنوان نقطه شروع در History ثبت می‌کنیم.
+if (!history.state || history.state.appPage !== 0) {
+    history.replaceState({ appPage: 0 }, '', location.href.split('#')[0] + '#page0');
+}
 
 function showPage(n) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -888,6 +896,7 @@ function goToPage(n) {
     if (n === currentPageNumber) return;
     playSound();
     pageHistory.push(n);
+    history.pushState({ appPage: n }, '', '#page' + n);
     showPage(n);
 }
 
@@ -897,12 +906,18 @@ function goBack() {
         return;
     }
     playSound();
-    pageHistory.pop();
-    showPage(pageHistory[pageHistory.length - 1]);
+    // با History گوشی یک مرحله عقب می‌رویم؛ popstate صفحه را هم‌زمان عوض می‌کند.
+    history.back();
 }
 
-window.addEventListener('popstate', function () {
-    goBack();
+window.addEventListener('popstate', function (event) {
+    const statePage = event.state && Number.isInteger(event.state.appPage)
+        ? event.state.appPage : 0;
+
+    if (pageHistory.length > 1) {
+        pageHistory.pop();
+    }
+    showPage(statePage);
 });
 
 // --- ساخت محتوا ---
