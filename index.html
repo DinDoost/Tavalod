@@ -432,6 +432,21 @@ body {
     }
 }
 
+
+/* تاریخ و ساعت لحظه‌ای در صفحه تولد */
+.live-datetime{
+    margin:18px 0 12px; padding:14px 12px; border-radius:16px;
+    background:linear-gradient(135deg,#eef7ff,#ffffff); border:2px solid #90caf9;
+    box-shadow:0 4px 14px rgba(30,100,160,.14); text-align:center;
+}
+.live-date{font-size:18px;font-weight:900;color:#1565c0;margin-bottom:7px}
+.live-time{font-size:30px;font-weight:900;color:#0d47a1;direction:ltr;letter-spacing:1px}
+.live-time::first-letter{}
+.detail-actions{display:flex;gap:10px;flex-direction:column;margin-top:18px}
+.detail-actions .btn{margin-top:0!important}
+.btn-share{background:linear-gradient(135deg,#1565c0,#1e88e5)!important;color:#fff!important}
+.btn-save{background:linear-gradient(135deg,#2e7d32,#43a047)!important;color:#fff!important}
+@keyframes blinkColon{0%,45%{opacity:1}50%,95%{opacity:.25}100%{opacity:1}}
 </style>
 </head>
 <body>
@@ -465,7 +480,7 @@ body {
                 </div>
                 <div class="family-info">
                     <div class="p-name">ملا غلامسخی</div>
-                    <div class="p-role">پدر مهربان</div>
+                    <div class="p-role">پدر بزرگ</div>
                 </div>
             </div>
             
@@ -475,7 +490,7 @@ body {
                 </div>
                 <div class="family-info">
                     <div class="p-name">خانم زبیده</div>
-                    <div class="p-role">مادر مهربان</div>
+                    <div class="p-role">مادر بزرگ</div>
                 </div>
             </div>
 
@@ -1013,7 +1028,7 @@ function createDetailPage(pageId, name, dateStr, backId, backLabel, uniqueId, ex
     let div = document.createElement('div');
     div.className = 'page'; div.id = 'page' + pageId;
     div.innerHTML = `
-        <div class="page-header"><h2>${name}</h2></div>
+        <div class="page-header"><h2>تولد ${name}</h2></div>
         <table class="date-table">
             <thead><tr><th style="width:20%">تقویم</th><th style="width:20%">روز</th><th style="width:35%">ماه</th><th style="width:25%">سال</th></tr></thead>
             <tbody>
@@ -1026,10 +1041,88 @@ function createDetailPage(pageId, name, dateStr, backId, backLabel, uniqueId, ex
             <div style="font-size:13px; margin-bottom:10px; color:#cfd8dc;">سن دقیق در این لحظه:</div>
             <div class="age-display"><div class="age-unit"><span class="age-num" id="ad-${uniqueId}">0</span><span class="age-txt">روز</span></div><div class="age-unit"><span class="age-num" id="am-${uniqueId}">0</span><span class="age-txt">ماه</span></div><div class="age-unit"><span class="age-num" id="ay-${uniqueId}">0</span><span class="age-txt">سال</span></div></div>
             <div class="animal-box">سال حیوان: <span id="zod-${uniqueId}"></span></div>
+            <div class="live-datetime capture-live-date" id="live-${uniqueId}">
+                <div class="live-date" id="ld-${uniqueId}">تاریخ امروز</div>
+                <div class="live-time" id="lt-${uniqueId}">0:00</div>
+            </div>
             ${extraContent}
+            <div class="detail-actions capture-hide">
+                <button class="btn btn-share" type="button" onclick="shareDetailPage(${pageId}, '${uniqueId}', '${name.replace(/'/g,"\'")}')">📤 اشتراک‌گذاری به شکل عکس</button>
+                <button class="btn btn-save" type="button" onclick="saveDetailPage(${pageId}, '${uniqueId}', '${name.replace(/'/g,"\'")}')">🖼️ ذخیره عکس</button>
+            </div>
         </div>
     `;
     detailsContainer.appendChild(div);
+}
+
+// --- تاریخ و ساعت لحظه‌ای دستگاه ---
+function updateLiveDateTime(uniqueId){
+    const elDate=document.getElementById(`ld-${uniqueId}`), elTime=document.getElementById(`lt-${uniqueId}`);
+    if(!elDate || !elTime) return;
+    const now=new Date();
+    const j=toJalali(now.getFullYear(), now.getMonth()+1, now.getDate());
+    elDate.textContent=`${j[2]} ${afghanMonths[j[1]-1]} سال ${j[0]}`;
+    const hh=now.getHours()%12 || 12;
+    const mm=String(now.getMinutes()).padStart(2,'0');
+    elTime.innerHTML=`${hh}<span style="animation:blinkColon 1s steps(1) infinite">:</span>${mm}`;
+}
+function updateAllLiveDateTimes(){
+    document.querySelectorAll('[id^="ld-"]').forEach(el=>updateLiveDateTime(el.id.substring(3)));
+}
+setInterval(updateAllLiveDateTimes,1000);
+
+// --- تهیه عکس از همان صفحه، بدون دکمه‌های برنامه ---
+async function pageToCanvas(pageId){
+    const source=document.getElementById('page'+pageId);
+    if(!source) throw new Error('صفحه پیدا نشد');
+    const clone=source.cloneNode(true);
+    clone.querySelectorAll('.capture-hide,button,#global-back').forEach(e=>e.remove());
+    clone.style.display='block'; clone.style.position='fixed'; clone.style.left='0'; clone.style.top='0';
+    clone.style.width=source.getBoundingClientRect().width+'px'; clone.style.height='auto';
+    clone.style.maxHeight='none'; clone.style.overflow='visible'; clone.style.background='#fffcf5';
+    clone.querySelectorAll('.live-time span').forEach(x=>x.style.animation='none');
+    const width=Math.max(320,Math.ceil(source.getBoundingClientRect().width));
+    const height=Math.max(400,Math.ceil(source.scrollHeight || source.getBoundingClientRect().height));
+    const css=[...document.styleSheets].map(sheet=>{try{return [...sheet.cssRules].map(r=>r.cssText).join('')}catch(e){return ''}}).join('');
+    const html=`<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;background:#fffcf5;padding:0;box-sizing:border-box;font-family:Tahoma,Segoe UI,sans-serif;direction:rtl">${clone.innerHTML}</div>`;
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}"><foreignObject width="100%" height="100%"><style>${css}</style>${html}</foreignObject></svg>`;
+    const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    try{
+        const img=new Image();
+        await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+        const canvas=document.createElement('canvas'); canvas.width=width*2; canvas.height=height*2;
+        const ctx=canvas.getContext('2d'); ctx.scale(2,2); ctx.fillStyle='#fffcf5'; ctx.fillRect(0,0,width,height); ctx.drawImage(img,0,0,width,height);
+        return canvas;
+    }finally{URL.revokeObjectURL(url)}
+}
+async function makeDetailImage(pageId){
+    updateAllLiveDateTimes();
+    return await pageToCanvas(pageId);
+}
+async function saveDetailPage(pageId, uniqueId, name){
+    playSound();
+    try{
+        const canvas=await makeDetailImage(pageId);
+        canvas.toBlob(blob=>{
+            const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`تولد-${name}.png`; a.click();
+            setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+        },'image/png');
+    }catch(e){alert('ذخیره عکس در این مرورگر پشتیبانی نشد.');}
+}
+async function shareDetailPage(pageId, uniqueId, name){
+    playSound();
+    try{
+        const canvas=await makeDetailImage(pageId);
+        canvas.toBlob(async blob=>{
+            const file=new File([blob],`تولد-${name}.png`,{type:'image/png'});
+            if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+                await navigator.share({title:`تولد ${name}`,files:[file]});
+            }else{
+                const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`تولد-${name}.png`; a.click();
+            }
+        },'image/png');
+    }catch(e){ if(e.name!=='AbortError') alert('اشتراک‌گذاری عکس در این مرورگر پشتیبانی نشد.'); }
 }
 
 function updatePageData(dateStr, uniqueId) {
@@ -1048,6 +1141,7 @@ function updatePageData(dateStr, uniqueId) {
     document.getElementById(`yh-${uniqueId}`).innerText = h[0];
     let zIndex = (j[0] - 7) % 12; if (zIndex < 0) zIndex += 12;
     document.getElementById(`zod-${uniqueId}`).innerText = zodiacAnimals[zIndex];
+    updateLiveDateTime(uniqueId);
     let y = now.getFullYear() - date.getFullYear();
     let m = now.getMonth() - date.getMonth();
     let d = now.getDate() - date.getDate();
