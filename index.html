@@ -435,17 +435,13 @@ body {
 
 /* تاریخ و ساعت لحظه‌ای در صفحه تولد */
 .live-datetime{
-    margin:18px 0 12px; padding:14px 12px; border-radius:16px;
-    background:linear-gradient(135deg,#eef7ff,#ffffff); border:2px solid #90caf9;
-    box-shadow:0 4px 14px rgba(30,100,160,.14); text-align:center;
+    margin:10px 0 8px; padding:8px 10px; border-radius:10px;
+    background:linear-gradient(135deg,#eef7ff,#ffffff); border:1px solid #90caf9;
+    box-shadow:0 2px 8px rgba(30,100,160,.12); text-align:center;
 }
-.live-date{font-size:18px;font-weight:900;color:#1565c0;margin-bottom:7px}
-.live-time{font-size:30px;font-weight:900;color:#0d47a1;direction:ltr;letter-spacing:1px}
+.live-date{font-size:14px;font-weight:800;color:#1565c0;margin-bottom:3px}
+.live-time{font-size:22px;font-weight:900;color:#0d47a1;direction:ltr;letter-spacing:1px}
 .live-time::first-letter{}
-.detail-actions{display:flex;gap:10px;flex-direction:column;margin-top:18px}
-.detail-actions .btn{margin-top:0!important}
-.btn-share{background:linear-gradient(135deg,#1565c0,#1e88e5)!important;color:#fff!important}
-.btn-save{background:linear-gradient(135deg,#2e7d32,#43a047)!important;color:#fff!important}
 @keyframes blinkColon{0%,45%{opacity:1}50%,95%{opacity:.25}100%{opacity:1}}
 </style>
 </head>
@@ -1046,10 +1042,6 @@ function createDetailPage(pageId, name, dateStr, backId, backLabel, uniqueId, ex
                 <div class="live-time" id="lt-${uniqueId}">0:00</div>
             </div>
             ${extraContent}
-            <div class="detail-actions capture-hide">
-                <button class="btn btn-share" type="button" onclick="shareDetailPage(${pageId}, '${uniqueId}', '${name.replace(/'/g,"\'")}')">اشتراک گذاری</button>
-                <button class="btn btn-save" type="button" onclick="saveDetailPage(${pageId}, '${uniqueId}', '${name.replace(/'/g,"\'")}')">🖼️ ذخیره عکس</button>
-            </div>
         </div>
     `;
     detailsContainer.appendChild(div);
@@ -1070,132 +1062,6 @@ function updateAllLiveDateTimes(){
     document.querySelectorAll('[id^="ld-"]').forEach(el=>updateLiveDateTime(el.id.substring(3)));
 }
 setInterval(updateAllLiveDateTimes,1000);
-
-// --- تهیه عکس از همان صفحه، بدون دکمه‌های برنامه ---
-async function pageToCanvas(pageId){
-    const source=document.getElementById('page'+pageId);
-    if(!source) throw new Error('صفحه پیدا نشد');
-    const rect=source.getBoundingClientRect();
-    const width=Math.max(320,Math.ceil(rect.width || source.clientWidth || 360));
-    const height=Math.max(400,Math.ceil(source.scrollHeight || source.offsetHeight || rect.height || 500));
-
-    // ساخت یک نسخهٔ مستقل از صفحه برای عکس
-    const clone=source.cloneNode(true);
-    clone.querySelectorAll('.capture-hide,button,#global-back').forEach(e=>e.remove());
-    clone.style.display='block';
-    clone.style.position='static';
-    clone.style.width=width+'px';
-    clone.style.height='auto';
-    clone.style.maxHeight='none';
-    clone.style.overflow='visible';
-    clone.style.margin='0';
-    clone.style.background='#fffcf5';
-
-    const css=[...document.styleSheets].map(sheet=>{
-        try{return [...sheet.cssRules].map(r=>r.cssText).join('\n')}
-        catch(e){return ''}
-    }).join('\n');
-
-    const html=`<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;min-height:${height}px;background:#fffcf5;box-sizing:border-box;font-family:Tahoma,Segoe UI,sans-serif;direction:rtl">${clone.outerHTML}</div>`;
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><foreignObject x="0" y="0" width="${width}" height="${height}"><style>${css}</style>${html}</foreignObject></svg>`;
-
-    const svgBlob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'});
-    const url=URL.createObjectURL(svgBlob);
-    try{
-        const img=new Image();
-        img.decoding='async';
-        await new Promise((resolve,reject)=>{
-            img.onload=resolve;
-            img.onerror=()=>reject(new Error('ساخت تصویر صفحه ناکام شد'));
-            img.src=url;
-        });
-        const canvas=document.createElement('canvas');
-        canvas.width=width*2;
-        canvas.height=height*2;
-        const ctx=canvas.getContext('2d',{alpha:false});
-        if(!ctx) throw new Error('Canvas در این مرورگر فعال نیست');
-        ctx.fillStyle='#fffcf5';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.setTransform(2,0,0,2,0,0);
-        ctx.drawImage(img,0,0,width,height);
-        return canvas;
-    }finally{
-        URL.revokeObjectURL(url);
-    }
-}
-
-async function makeDetailImage(pageId){
-    updateAllLiveDateTimes();
-    // اجازه بده مرورگر آخرین تغییرات صفحه را رندر کند
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    return await pageToCanvas(pageId);
-}
-
-function canvasToPngBlob(canvas){
-    return new Promise((resolve,reject)=>{
-        try{
-            canvas.toBlob(blob=>{
-                if(blob && blob.size>100) resolve(blob);
-                else reject(new Error('فایل PNG ساخته نشد'));
-            },'image/png');
-        }catch(e){reject(e)}
-    });
-}
-
-function openImageForSaving(blob,filename){
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=filename;
-    a.rel='noopener';
-    a.style.display='none';
-    document.body.appendChild(a);
-    try{ a.click(); }catch(e){}
-    setTimeout(()=>{
-        a.remove();
-        // اگر دانلود توسط مرورگر بسته شد، عکس را در یک صفحهٔ جدید باز می‌کنیم
-        // تا کاربر بتواند از گزینهٔ Save image مرورگر استفاده کند.
-        try{ window.open(url,'_blank'); }catch(e){}
-        setTimeout(()=>URL.revokeObjectURL(url),30000);
-    },700);
-}
-
-async function saveDetailPage(pageId, uniqueId, name){
-    playSound();
-    try{
-        const canvas=await makeDetailImage(pageId);
-        const blob=await canvasToPngBlob(canvas);
-        openImageForSaving(blob,`تولد-${name}.png`);
-    }catch(e){
-        console.error('Save image error:',e);
-        alert('ذخیره عکس انجام نشد. لطفاً صفحه را یک بار بسته و دوباره باز کنید.');
-    }
-}
-
-async function shareDetailPage(pageId, uniqueId, name){
-    playSound();
-    try{
-        if(typeof navigator.share!=='function'){
-            alert('اشتراک گذاری در این مرورگر پشتیبانی نمی‌شود.');
-            return;
-        }
-        const canvas=await makeDetailImage(pageId);
-        const blob=await canvasToPngBlob(canvas);
-        const file=new File([blob],`تولد-${name}.png`,{type:'image/png'});
-
-        if(typeof navigator.canShare==='function' && !navigator.canShare({files:[file]})){
-            alert('اشتراک گذاری عکس در این دستگاه پشتیبانی نمی‌شود.');
-            return;
-        }
-        // فقط اشتراک گذاری؛ بدون ذخیره و بدون دانلود
-        await navigator.share({title:'اشتراک گذاری',files:[file]});
-    }catch(e){
-        if(!e || e.name!=='AbortError'){
-            console.error('Share image error:',e);
-            alert('اشتراک گذاری انجام نشد. اگر مرورگر اجازه خواست، اجازهٔ دسترسی را بدهید.');
-        }
-    }
-}
 
 function updatePageData(dateStr, uniqueId) {
     const now = new Date();
